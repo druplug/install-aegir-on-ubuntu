@@ -41,10 +41,14 @@
 #
 # ***********************************
 # set versions Aegir & Drush versions
-DRUSH_VERSION="7.x-4.5"
+DRUSH_VERSION="7.x-5.9"
 #DRUSH_VERSION="7.x-4.4"
 #
-AEGIR_VERSION="6.x-1.5"
+AEGIR_VERSION="6.x-2.0-rc3"
+#AEGIR_VERSION="6.x-1.8"
+#AEGIR_VERSION="6.x-1.7"
+#AEGIR_VERSION="6.x-1.6"
+#AEGIR_VERSION="6.x-1.5"
 #AEGIR_VERSION="6.x-1.4"
 #AEGIR_VERSION="6.x-1.3"
 #AEGIR_VERSION="6.x-1.2"
@@ -57,9 +61,9 @@ AEGIR_VERSION="6.x-1.5"
 #       Ubuntu server. Set the root password for MySQL, and accept the defaults
 #       at postfix install (Internet site, ...)
 #
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install apache2 php5 php5-cli php5-gd php5-mysql mysql-server postfix git-core unzip
+# sudo apt-get update
+# sudo apt-get upgrade
+# sudo apt-get install apache2 php5 php5-cli php5-gd php5-mysql mysql-server postfix git-core unzip
 #
 #
 #    2. LAMP configurations
@@ -72,8 +76,10 @@ sudo a2enmod rewrite
 sudo ln -s /var/aegir/config/apache.conf /etc/apache2/conf.d/aegir.conf
 #
 # MySQL: enable all IP addresses to bind
-sudo sed -i 's/bind-address/#bind-address/' /etc/mysql/my.cnf
-sudo service mysql restart
+# sudo sed -i 's/bind-address/#bind-address/' /etc/mysql/my.cnf
+# sudo service mysql restart
+# MySQL: using secure install script instead
+sudo mysql_secure_installation
 #
 #
 #   3. Aegir install
@@ -106,63 +112,28 @@ sudo su -s /bin/sh - aegir -c "drush dl --destination=/var/aegir/.drush provisio
 # install hostmaster frontend by drush, incl drush_make
 echo "installing frontend: Drupal 6 with hostmaster profile ..."
 sudo su -s /bin/sh - aegir -c "drush hostmaster-install"
+echo "
+Aegir install ready, above you have the login link!
+
+"
+
 #
-#
-# apply patches to drush_make
-#
-# Aegir 6.x-1.0 - 6.x-1.2 is using drush_make 6.x-2.2
-if [ "$AEGIR_VERSION" == "6.x-1.0" ] || [ "$AEGIR_VERSION" == "6.x-1.1" ] || [ "$AEGIR_VERSION" == "6.x-1.2" ] ; then
-# 1. http://drupal.org/node/947158
-#    resolves recursive make file issue if two makefiles contains the same module
-  sudo su -s /bin/sh - aegir -c "
-  wget http://drupal.org/files/issues/947158-recursive_2.patch ;
-  cd /var/aegir/.drush/drush_make ;
-  patch -p 1 < ~/947158-recursive_2.patch ;
-  rm ~/947158-recursive_2.patch ;
-  "
-# 
-# 2. http://drupal.org/node/745224
-#    Apply patches from git diff and git format-patch (p0 - p1)
-  sudo su -s /bin/sh - aegir -c "
-  wget http://drupal.org/files/issues/drush_make-745224-git-apply-104.patch ;
-  cd /var/aegir/.drush/drush_make ;
-  patch -p 1 < ~/drush_make-745224-git-apply-104.patch ;
-  rm ~/drush_make-745224-git-apply-104.patch ;
-  "
-#
-# Aegir 6.x-1.3 - 6.x-1.5 is using drush_make 6.x-2.3
-elif [ "$AEGIR_VERSION" == "6.x-1.3" ] || [ "$AEGIR_VERSION" == "6.x-1.4" ] || [ "$AEGIR_VERSION" == "6.x-1.5" ]; then
-# 1. http://drupal.org/node/1253414
-#    Allows to use different versions of the same project in nested make files
-  sudo su -s /bin/sh - aegir -c "
-  wget http://drupal.org/files/1253414-allow-multiple-module-versions_0.patch ;
-  cd /var/aegir/.drush/drush_make ;
-  patch -p 1 < ~/1253414-allow-multiple-module-versions_0.patch ;
-  rm ~/1253414-allow-multiple-module-versions_0.patch ;
-  "
-# 
-else
-  echo "unknown AEGIR_VERSION=$AEGIR_VERSION"
-fi
-#
-echo "Checkpoint / But not yet finished!
+echo "
 #
 # Checkpoint / But not yet finished!
 #
-# The installation will provide you with a one-time login URL to stdout
-# or via an e-mail. Use this link to login to your new Aegir site for the 
-# first time.
+# The installation has provided you with a one-time login URL to stdout
+# (see above), or via an e-mail. Use this link to login to your new Aegir site
+# for the first time.
 #
-# Do not forget to add all the domains you are going to manage by Aegir,
-# to your /etc/hosts files on every boxes your are using!
+# 1. Do not forget to add all the domains you are going to manage by Aegir,
+#    to your /etc/hosts files on every boxes your are using!
 # 
-# Create your SSH public id and copy it to remote servers, if you use this
-# feature by
-#    ssh-keygen -t rsa
-#    ssh-copy-id <myhost.local>
-#    ssh <myhost.local> 
+# 2. Copy your public id to remote servers, if you use any remote servers:
+#      ssh-copy-id <myhost.local>
+#      ssh <myhost.local> 
 #
-# You can switch to the aegir user by: 
-#     sudo su -s /bin/bash - aegir
+# 3. You can switch to the aegir user by: 
+#      sudo su -s /bin/bash - aegir
 #
 "
